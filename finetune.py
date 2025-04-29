@@ -1,3 +1,4 @@
+import datasets
 from datasets import load_from_disk
 
 from transformers import (
@@ -208,11 +209,14 @@ class PPO_FineTune:
             self.tokenizer.pad_token = self.tokenizer.eos_token
         print("PPO-Fine-Tune >> tokenizer loaded")
 
-        self.dataset = load_from_disk(dataset_path)
+        self.dataset = datasets.load_dataset("Salesforce/wikitext", "wikitext-103-v1", split={
+                "train":      f"train[:1%]",
+                "validation": f"validation[:1%]"
+            }) # Load smaller size for testing purpose
         print("PPO-Fine-Tune >> dataset loaded")
 
         print("PPO-Fine-Tune >> Start mapping dataset")
-        self.tokenized_dataset = self.dataset.map(self.tokenize_function_normal, batched=batched)
+        self.tokenized_dataset = self.dataset.map(self.tokenize_function_normal, batched=batched, remove_columns=["text"])
         print("PPO-Fine-Tune >> dataset mapping done")
 
         self.training_args = TrainingArguments()
@@ -269,9 +273,9 @@ class PPO_FineTune:
 
 if __name__ == "__main__":
     # common used params
-    tokenizer_path = r"D:\SJZ\tools\nlp_models\openai_gpt2_tokenizer"
-    model_path = r"D:\SJZ\tools\nlp_models\openai_gpt2_model"
-    dataset_path = "D:\\SJZ\\tools\\LLM_dataset\\wikitext"
+    tokenizer_path = r"openai-community/gpt2"
+    model_path = r"openai-community/gpt2"
+    dataset_path = r"Salesforce/wikitext"
 
     # Full fine tune test --------------------
     # FFT = Full_FineTune(model_path=model_path, tokenizer_path=tokenizer_path, dataset_path=dataset_path)
